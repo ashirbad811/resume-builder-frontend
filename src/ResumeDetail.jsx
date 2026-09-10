@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Printer, ChevronLeft, LayoutTemplate, FileDown, Edit2, Save } from 'lucide-react';
 import templates, { demoResumeData } from './ResumeTemplates';
@@ -10,14 +10,19 @@ import FormSection from './components/FormSection';
 import { X, Check } from 'lucide-react';
 
 const ResumeDetail = () => {
-    const { id } = useParams();
+    const location = useLocation();
     const navigate = useNavigate();
+    const id = location.state?.id;
     const { user } = useAuth();
     const [resume, setResume] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedTemplate, setSelectedTemplate] = useState(0);
 
-
+    useEffect(() => {
+        if (!id) {
+            navigate('/resumes');
+        }
+    }, [id, navigate]);
     const fetchResume = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/resumes/${id}`);
@@ -33,7 +38,9 @@ const ResumeDetail = () => {
     };
 
     useEffect(() => {
-        fetchResume();
+        if (id) {
+            fetchResume();
+        }
     }, [id]);
 
     const handleUpdatePersonalDetails = async () => {
@@ -85,56 +92,52 @@ const ResumeDetail = () => {
 
     return (
         <div className="min-h-screen bg-slate-100 font-sans">
-            <header className="bg-white shadow-sm sticky top-0 z-10 print:hidden border-b border-slate-200">
+            <header className="bg-white/80 backdrop-blur-xl shadow-sm sticky top-0 z-20 print:hidden border-b border-slate-200/60">
                 <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <Link to={user ? "/resumes" : "/"} className="text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1">
-                            <ChevronLeft size={20} /> Back
+                        <Link to={user ? "/resumes" : "/"} className="text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1 font-medium bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-blue-50 hover:border-blue-100">
+                            <ChevronLeft size={18} /> Back
                         </Link>
-                        <h1 className="text-xl font-bold text-slate-800 truncate max-w-xs">{resume.title}</h1>
+                        <h1 className="text-xl font-bold text-slate-800 truncate max-w-xs">{resume.title || 'Untitled Resume'}</h1>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="relative">
-
-                        </div>
-
-                        <button onClick={handleDownloadDocx} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 transition font-medium">
-                            <FileDown size={18} /> <span>DOCX</span>
+                        <button onClick={handleDownloadDocx} className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:border-blue-300 hover:text-blue-600 transition-all font-semibold shadow-sm">
+                            <FileDown size={18} /> <span className="hidden sm:inline">Export DOCX</span>
                         </button>
 
-                        <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium shadow-sm hover:shadow">
-                            <Printer size={18} /> <span>PDF</span>
+                        <button onClick={handlePrint} className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                            <Printer size={18} /> <span className="hidden sm:inline">Export PDF</span>
                         </button>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-[1920px] mx-auto p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
+            <main className="max-w-[1920px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-4 lg:gap-6 bg-slate-50 min-h-[calc(100vh-64px)]">
 
                 {/* Editor Panel */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="w-full lg:w-1/3 xl:w-1/4 space-y-8 print:hidden h-[calc(100vh-100px)] overflow-y-auto pr-2 custom-scrollbar pb-20"
+                    className="w-full lg:w-[320px] xl:w-[380px] shrink-0 space-y-6 print:hidden h-[calc(100vh-120px)] overflow-y-auto pr-2 custom-scrollbar pb-10"
                 >
                     {/* Personal Details Form */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <div className="flex items-center gap-2 mb-4 text-slate-800">
-                            <div className="p-2 bg-slate-100 text-slate-600 rounded-lg"><Edit2 size={18} /></div>
-                            <h3 className="font-bold text-lg">Personal Details</h3>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><Edit2 size={20} /></div>
+                            <h3 className="font-bold text-xl text-slate-800">Personal Details</h3>
                         </div>
-                        <form onSubmit={(e) => { e.preventDefault(); handleUpdatePersonalDetails(); }} className="space-y-3">
-                            <input className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none transition" placeholder="Resume Title" value={resume.title || ''} onChange={e => setResume({ ...resume, title: e.target.value })} />
-                            <input className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none transition" placeholder="Full Name" value={resume.full_name || ''} onChange={e => setResume({ ...resume, full_name: e.target.value })} />
-                            <input className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none transition" placeholder="Email" value={resume.email || ''} onChange={e => setResume({ ...resume, email: e.target.value })} />
-                            <div className="flex gap-3">
-                                <input className="w-1/2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none transition" placeholder="Phone" value={resume.phone || ''} onChange={e => setResume({ ...resume, phone: e.target.value })} />
-                                <input className="w-1/2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none transition" placeholder="Address" value={resume.address || ''} onChange={e => setResume({ ...resume, address: e.target.value })} />
+                        <form onSubmit={(e) => { e.preventDefault(); handleUpdatePersonalDetails(); }} className="space-y-4">
+                            <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700 placeholder:font-normal" placeholder="Resume Title (e.g. Frontend Dev)" value={resume.title || ''} onChange={e => setResume({ ...resume, title: e.target.value })} />
+                            <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700 placeholder:font-normal" placeholder="Full Name" value={resume.full_name || ''} onChange={e => setResume({ ...resume, full_name: e.target.value })} />
+                            <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700 placeholder:font-normal" placeholder="Email" value={resume.email || ''} onChange={e => setResume({ ...resume, email: e.target.value })} />
+                            <div className="flex gap-4">
+                                <input className="w-1/2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700 placeholder:font-normal" placeholder="Phone" value={resume.phone || ''} onChange={e => setResume({ ...resume, phone: e.target.value })} />
+                                <input className="w-1/2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700 placeholder:font-normal" placeholder="Address" value={resume.address || ''} onChange={e => setResume({ ...resume, address: e.target.value })} />
                             </div>
-                            <textarea className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none transition h-24 resize-none" placeholder="Professional Summary" value={resume.summary || ''} onChange={e => setResume({ ...resume, summary: e.target.value })} />
+                            <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all h-32 resize-none font-medium text-slate-700 placeholder:font-normal leading-relaxed" placeholder="Professional Summary" value={resume.summary || ''} onChange={e => setResume({ ...resume, summary: e.target.value })} />
 
-                            <button type="submit" className="w-full bg-slate-800 text-white py-2.5 rounded-lg hover:bg-slate-900 transition flex justify-center items-center gap-2 font-medium">
+                            <button type="submit" className="w-full mt-2 bg-slate-900 text-white py-3.5 rounded-xl hover:bg-blue-600 transition-all flex justify-center items-center gap-2 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
                                 <Save size={18} /> Save Details
                             </button>
                         </form>
@@ -274,8 +277,8 @@ const ResumeDetail = () => {
                 </div>
 
                 {/* Template Sidebar */}
-                <div className="w-full lg:w-80 print:hidden h-[calc(100vh-100px)] overflow-y-auto pr-2 custom-scrollbar pb-20">
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 sticky top-0">
+                <div className="w-full lg:w-60 xl:w-72 shrink-0 print:hidden h-[calc(100vh-100px)] overflow-y-auto pr-2 custom-scrollbar pb-20">
+                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                         <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
                             <LayoutTemplate size={18} /> Templates
                         </h3>

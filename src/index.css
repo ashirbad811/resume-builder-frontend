@@ -1,1 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@theme {
+  font-family-sans: "Inter", "sans-serif";
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800 bg-slate-50;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-lg border border-white/40 shadow-xl;
+  }
+
+  .glass-nav {
+    @apply bg-white/60 backdrop-blur-xl border-b border-white/20 shadow-sm;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+  }
+}

@@ -45,18 +45,30 @@ const FormSection = ({ title, items, fields, onAdd, onUpdate, onDelete, color = 
     return (
         <div className="space-y-4">
             {/* List Items */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="font-bold text-slate-800 mb-2">{title}</h3>
-                {items?.length === 0 && <p className="text-gray-400 text-sm">No items yet</p>}
-                <ul className="space-y-2">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 transition-all hover:shadow-md">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getColorClass(color).split(' ')[0]} ${getColorClass(color).split(' ')[1]}`}>
+                        <span className="font-bold text-sm">{items?.length || 0}</span>
+                    </div>
+                    <h3 className="font-bold text-slate-800 text-lg">{title}</h3>
+                </div>
+                
+                {items?.length === 0 && (
+                    <div className="p-4 border-2 border-dashed border-slate-100 rounded-xl text-center">
+                        <p className="text-slate-400 text-sm font-medium">No items yet. Add one below.</p>
+                    </div>
+                )}
+                
+                <ul className="space-y-3">
                     {items?.map(item => (
-                        <li key={item.id} className="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100 text-sm group hover:border-slate-300 transition">
-                            <div className="truncate w-32 font-medium">
-                                {item[fields[0].name] || item[fields[1]?.name] || 'Item'}
+                        <li key={item.id} className="flex justify-between items-center bg-slate-50 p-3 pl-4 rounded-xl border border-slate-100 text-sm group hover:border-slate-300 hover:bg-white hover:shadow-sm transition-all duration-200">
+                            <div className="truncate w-full font-semibold text-slate-700">
+                                {item[fields[0].name] || item[fields[1]?.name] || 'New Item'}
+                                {item[fields[1]?.name] && <span className="font-normal text-slate-500 ml-2 block sm:inline">{item[fields[1]?.name]}</span>}
                             </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                                <button onClick={() => handleEditClick(item)} className={`p-1 hover:bg-${color}-50 text-${color}-600 rounded`}><Edit2 size={14} /></button>
-                                <button onClick={() => onDelete(item.id)} className="p-1 hover:bg-red-50 text-red-600 rounded"><Trash2 size={14} /></button>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4 shrink-0">
+                                <button onClick={() => handleEditClick(item)} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"><Edit2 size={16} /></button>
+                                <button onClick={() => onDelete(item.id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"><Trash2 size={16} /></button>
                             </div>
                         </li>
                     ))}
@@ -64,56 +76,62 @@ const FormSection = ({ title, items, fields, onAdd, onUpdate, onDelete, color = 
             </div>
 
             {/* Add/Edit Form */}
-            <div className={`p-6 rounded-xl shadow-sm border bg-white border-slate-200`}>
-                <div className="flex items-center gap-2 mb-4 text-slate-800 justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className={`p-2 rounded-lg ${getColorClass(color).split(' ')[0]} ${getColorClass(color).split(' ')[1]}`}>
-                            {isEditing ? <Edit2 size={18} /> : <Plus size={18} />}
+            <div className="p-6 rounded-2xl shadow-sm border bg-white border-slate-100 transition-all hover:shadow-md">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-xl shadow-sm ${getColorClass(color).split(' ')[0]} ${getColorClass(color).split(' ')[1]}`}>
+                            {isEditing ? <Edit2 size={20} /> : <Plus size={20} />}
                         </div>
-                        <h3 className="font-bold text-lg">{isEditing ? `Edit ${title}` : `Add ${title}`}</h3>
+                        <h3 className="font-bold text-lg text-slate-800">{isEditing ? `Edit ${title}` : `Add ${title}`}</h3>
                     </div>
-                    {isEditing && <button onClick={resetForm}><X size={18} /></button>}
+                    {isEditing && (
+                        <button onClick={resetForm} className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-colors">
+                            <X size={20} />
+                        </button>
+                    )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     {fields.map((field, idx) => {
                         if (field.type === 'textarea') return (
-                            <textarea
-                                key={idx}
-                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 outline-none transition h-24 resize-none"
-                                placeholder={field.placeholder}
-                                value={formData[field.name] || ''}
-                                onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
-                                required={field.required}
-                            />
+                            <div key={idx} className="space-y-1">
+                                <textarea
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all h-28 resize-none font-medium text-slate-700 placeholder:font-normal placeholder:text-slate-400"
+                                    placeholder={field.placeholder}
+                                    value={formData[field.name] || ''}
+                                    onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
+                                    required={field.required}
+                                />
+                            </div>
                         );
                         if (field.type === 'select') return (
-                            <select
-                                key={idx}
-                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 outline-none transition"
-                                value={formData[field.name] || ''}
-                                onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
-                            >
-                                {field.options.map(opt => <option key={opt}>{opt}</option>)}
-                            </select>
+                            <div key={idx} className="space-y-1">
+                                <select
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700"
+                                    value={formData[field.name] || ''}
+                                    onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
+                                >
+                                    <option value="" disabled>Select {field.placeholder}</option>
+                                    {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                </select>
+                            </div>
                         );
-                        // Group adjacent half-width inputs? For simplicity, stacking them for now strictly 
-                        // unless I add layout info to fields.
                         return (
-                            <input
-                                key={idx}
-                                type={field.type || 'text'}
-                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 outline-none transition"
-                                placeholder={field.placeholder}
-                                value={formData[field.name] || ''}
-                                onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
-                                required={field.required}
-                            />
+                            <div key={idx} className="space-y-1">
+                                <input
+                                    type={field.type || 'text'}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-700 placeholder:font-normal placeholder:text-slate-400"
+                                    placeholder={field.placeholder}
+                                    value={formData[field.name] || ''}
+                                    onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
+                                    required={field.required}
+                                />
+                            </div>
                         );
                     })}
 
-                    <button type="submit" className={`w-full py-2.5 rounded-lg transition flex justify-center items-center gap-2 font-medium text-white bg-slate-900 hover:bg-slate-800`}>
-                        {isEditing ? 'Update' : 'Add'}
+                    <button type="submit" className="w-full py-3.5 mt-2 rounded-xl transition-all flex justify-center items-center gap-2 font-bold text-white bg-slate-900 hover:bg-blue-600 shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                        {isEditing ? 'Save Changes' : `Add ${title}`}
                     </button>
                 </form>
             </div>

@@ -24,7 +24,7 @@ const ResumeList = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {resumes.map(resume => (
-                    <Link to={`/resume/${resume.id}`} key={resume.id} className="block group">
+                    <Link to={`/resume`} state={{ id: resume.id }} key={resume.id} className="block group">
                         <div className="p-4 bg-white border rounded shadow hover:shadow-md transition group-hover:border-blue-300">
                             <h3 className="text-xl font-semibold text-blue-600">{resume.title}</h3>
                             <p className="text-gray-600">{resume.full_name}</p>
